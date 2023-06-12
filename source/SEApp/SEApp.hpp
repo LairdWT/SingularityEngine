@@ -22,8 +22,8 @@ public:
 
 	void run();
 
-	static constexpr uint32_t m_WindowWidth = 1920;
-	static constexpr uint32_t m_WindowHeight = 1080;
+	static constexpr uint32_t m_WindowWidth = 1024;
+	static constexpr uint32_t m_WindowHeight = 1024;
 
 private:
 	void create_command_buffers();

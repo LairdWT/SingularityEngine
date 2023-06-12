@@ -212,7 +212,7 @@ void SERenderPipeline::create_shader_module(const std::vector<char>& shaderCode,
 
 bool SERenderPipeline::validate_spirv_code(const std::vector<char>& shaderCodeChar)
 {
-	if (ENABLE_SPIRV_VALIDATION) {
+	if (!ENABLE_SPIRV_VALIDATION) {
 		std::cout << "SPIRV validation disabled. Skipping...\n";
 		return true;
 	}
