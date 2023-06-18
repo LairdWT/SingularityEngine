@@ -1,4 +1,7 @@
 #include "SERenderPipeline.hpp"
+
+#include "SECore/SEEntities/SEMesh.hpp"
+
 #include <spirv-tools/libspirv.h>
 #include <fstream>
 #include <stdexcept>
@@ -129,6 +132,7 @@ void SERenderPipeline::create_graphics_pipeline(const std::string& vertFilepath,
 	create_shader_module(vertCode, &m_VertShaderModule);
 	create_shader_module(fragCode, &m_FragShaderModule);
 
+
 	VkPipelineShaderStageCreateInfo shaderStages[2];
 	shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -146,12 +150,16 @@ void SERenderPipeline::create_graphics_pipeline(const std::string& vertFilepath,
 	shaderStages[1].pNext = nullptr;
 	shaderStages[1].pSpecializationInfo = nullptr;
 
+
+	std::vector<VkVertexInputBindingDescription> bindingDescriptions = SEMesh::Vertex::get_binding_descriptions();
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions =  SEMesh::Vertex::get_attribute_descriptions();
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+	vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+
 
 	VkPipelineViewportStateCreateInfo viewportInfo{};
 	viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -159,6 +167,7 @@ void SERenderPipeline::create_graphics_pipeline(const std::string& vertFilepath,
 	viewportInfo.pViewports = &configInfo.viewport;
 	viewportInfo.scissorCount = 1;
 	viewportInfo.pScissors = &configInfo.scissor;
+
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

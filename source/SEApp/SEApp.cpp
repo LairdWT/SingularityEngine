@@ -7,6 +7,7 @@ namespace SE {
 #pragma region Lifecycle
 	SEApp::SEApp()
 	{
+		load_meshes();
 		create_pipeline_layout();
 		create_pipeline();
 		create_command_buffers();
@@ -67,8 +68,8 @@ void SEApp::create_command_buffers()
 		vkCmdBeginRenderPass(m_CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		m_Pipeline->bind_command_buffer(m_CommandBuffers[i]);
-
-		vkCmdDraw(m_CommandBuffers[i], 3, 1, 0, 0);
+		m_Mesh->bind_command_buffer(m_CommandBuffers[i]);
+		m_Mesh->draw(m_CommandBuffers[i]);
 
 		vkCmdEndRenderPass(m_CommandBuffers[i]);
 
@@ -113,6 +114,17 @@ void SEApp::draw_frame()
 	if (result != VK_SUCCESS) {
 		throw std::runtime_error("Failed to present swap chain image.");
 	}
+}
+
+void SEApp::load_meshes()
+{
+	std::vector<SEMesh::Vertex> verticies {
+		{ {0.0f, -0.5f},	{0.5f, 0.0f, 0.0f} },
+		{ {0.5f, 0.5f},	{0.0f, 0.5f, 0.0f} },
+		{ {-0.5f, 0.5f},	{0.0f, 0.0f, 0.5f} }
+	};
+
+	m_Mesh = std::make_unique<SEMesh>(m_GraphicsDevice, verticies);
 }
 
 } // namespace SE

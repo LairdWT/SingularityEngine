@@ -4,6 +4,8 @@
 #include "SERenderPipeline/SERenderPipeline.hpp"
 #include "SEGraphicsDevice/SEGraphicsDevice.hpp"
 #include "SERenderPipeline/SESwapChain.hpp"
+#include "SECore/SEEntities/SEMesh.hpp"
+
 #include <memory>
 #include <vector>
 
@@ -22,14 +24,15 @@ public:
 
 	void run();
 
-	static constexpr uint32_t m_WindowWidth = 1024;
-	static constexpr uint32_t m_WindowHeight = 1024;
+	static constexpr uint32_t m_WindowWidth = 1920;
+	static constexpr uint32_t m_WindowHeight = 1080;
 
 private:
 	void create_command_buffers();
 	void create_pipeline();
 	void create_pipeline_layout();
 	void draw_frame();
+	void load_meshes();
 
 	SEWindow m_SEWindow{m_WindowWidth, m_WindowHeight, "Singularity Engine"};
 	SEGraphicsDevice m_GraphicsDevice{ m_SEWindow };
@@ -37,6 +40,7 @@ private:
 	std::unique_ptr<SERenderPipeline> m_Pipeline;
 	VkPipelineLayout m_PipelineLayout;
 	std::vector<VkCommandBuffer> m_CommandBuffers;
+	std::unique_ptr<SEMesh> m_Mesh;
 };
 
 } // end SE namespace
