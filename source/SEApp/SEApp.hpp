@@ -29,16 +29,21 @@ public:
 
 private:
 	void create_command_buffers();
+	void record_command_buffers(int32_t imageIndex);
+	void free_command_buffers();
 	void create_pipeline();
 	void create_pipeline_layout();
 	void draw_frame();
 	void load_meshes();
+	void recreate_swap_chain();
+
 
 	SEWindow m_SEWindow{m_WindowWidth, m_WindowHeight, "Singularity Engine"};
 	SEGraphicsDevice m_GraphicsDevice{ m_SEWindow };
-	SESwapChain m_SwapChain{ m_GraphicsDevice, m_SEWindow.get_window_extent() };
-	std::unique_ptr<SERenderPipeline> m_Pipeline;
 	VkPipelineLayout m_PipelineLayout;
+
+	std::unique_ptr<SESwapChain> m_SwapChain;
+	std::unique_ptr<SERenderPipeline> m_Pipeline;
 	std::vector<VkCommandBuffer> m_CommandBuffers;
 	std::unique_ptr<SEMesh> m_Mesh;
 };

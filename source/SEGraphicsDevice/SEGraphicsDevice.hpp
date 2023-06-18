@@ -28,9 +28,11 @@ namespace SE {
 #pragma region Lifecycle
 		SEGraphicsDevice(SEWindow& window);
 		~SEGraphicsDevice();
-		// SEGraphicsDevice(const SEGraphicsDevice&) = delete;
-		void operator=(const SEGraphicsDevice&) = delete;
 
+		// SEGraphicsDevice(const SEGraphicsDevice&) = delete;
+		// SEGraphicsDevice& operator=(const SEGraphicsDevice&) = delete;
+		// SEGraphicsDevice(SEGraphicsDevice&&) = delete;
+		// SEGraphicsDevice& operator=(SEGraphicsDevice&&) = delete;
 #pragma endregion Lifecycle
 
 		VkCommandPool get_command_pool() { return m_CommandPool; }

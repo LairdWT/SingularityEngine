@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.h>
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace SE {
 
@@ -13,9 +14,11 @@ namespace SE {
 
 #pragma region Lifecycle
 		SESwapChain(SEGraphicsDevice& deviceRef, VkExtent2D windowExtent);
+		SESwapChain(SEGraphicsDevice& deviceRef, VkExtent2D windowExtent, std::shared_ptr<SESwapChain> previousSwapChain);
 		~SESwapChain();
+
 		SESwapChain(const SESwapChain&) = delete;
-		void operator=(const SESwapChain&) = delete;
+		SESwapChain& operator=(const SESwapChain&) = delete;
 #pragma endregion Lifecycle
 
 		VkFramebuffer get_frame_buffer(int index) { return m_SwapChainFramebuffers[index]; }
@@ -34,6 +37,7 @@ namespace SE {
 		VkResult submit_command_buffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
 
 	private:
+		void initialize();
 		void create_swapchain();
 		void create_image_views();
 		void create_depth_resources();
@@ -61,7 +65,8 @@ namespace SE {
 		SEGraphicsDevice& m_GraphicsDevice;
 		VkExtent2D m_WindowExtent;
 
-		VkSwapchainKHR m_SswapChain;
+		VkSwapchainKHR m_SwapChain;
+		std::shared_ptr<SESwapChain> m_PreviousSwapChain;
 
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
