@@ -12,11 +12,13 @@
 namespace SE {
 
 #pragma region Lifecycle
-SERenderPipeline::SERenderPipeline(SEGraphicsDevice& graphicsDevice, const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo) : m_GraphicsDevice{ graphicsDevice } {
+SERenderPipeline::SERenderPipeline(SEGraphicsDevice& graphicsDevice, const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo) : m_GraphicsDevice{ graphicsDevice } 
+{
 create_graphics_pipeline(vertFilepath, fragFilepath, configInfo);
 }
 
-SERenderPipeline::~SERenderPipeline() {
+SERenderPipeline::~SERenderPipeline() 
+{
 		vkDestroyShaderModule(m_GraphicsDevice.device(), m_VertShaderModule, nullptr);
 		vkDestroyShaderModule(m_GraphicsDevice.device(), m_FragShaderModule, nullptr);
 		vkDestroyPipeline(m_GraphicsDevice.device(), m_GraphicsPipeline, nullptr);
@@ -107,7 +109,8 @@ std::vector<char> SERenderPipeline::read_file(const std::string& filepath)
 {
 	std::ifstream fileIn(filepath, std::ios::ate | std::ios::binary);
 
-	if (!fileIn.is_open()) {
+	if (!fileIn.is_open()) 
+	{
 		throw std::runtime_error("Failed to open file: " + filepath);
 	}
 
@@ -181,20 +184,23 @@ void SERenderPipeline::create_graphics_pipeline(const std::string& vertFilepath,
 	pipelineInfo.basePipelineIndex = -1;  // Optional
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;  // Optional
 
-	if (vkCreateGraphicsPipelines(m_GraphicsDevice.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(m_GraphicsDevice.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create graphics pipeline.");
 	}
 }
 
 void SERenderPipeline::create_shader_module(const std::vector<char>& shaderCode, VkShaderModule* shaderModule)
 {
-	try {
+	try 
+	{
 		if (!validate_spirv_code(shaderCode))
 		{
 			throw std::runtime_error("Shader Code not valid format.");
 		}
-	}
-	catch (const std::runtime_error& e) {
+	} 
+	catch (const std::runtime_error& e) 
+	{
 		std::cerr << "Validation of SPIRV code failed with error: " << e.what() << "\n";
 		return;
 	}
@@ -204,7 +210,8 @@ void SERenderPipeline::create_shader_module(const std::vector<char>& shaderCode,
 	createInfo.codeSize = shaderCode.size();
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
 
-	if (vkCreateShaderModule(m_GraphicsDevice.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
+	if (vkCreateShaderModule(m_GraphicsDevice.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) 
+	{
 		throw std::runtime_error("failed to create shader module");
 	}
 }
@@ -212,24 +219,28 @@ void SERenderPipeline::create_shader_module(const std::vector<char>& shaderCode,
 
 bool SERenderPipeline::validate_spirv_code(const std::vector<char>& shaderCodeChar)
 {
-	if (!ENABLE_SPIRV_VALIDATION) {
+	if (!ENABLE_SPIRV_VALIDATION) 
+	{
 		std::cout << "SPIRV validation disabled. Skipping...\n";
 		return true;
 	}
 
-	if (shaderCodeChar.size() % sizeof(uint32_t) != 0) {
+	if (shaderCodeChar.size() % sizeof(uint32_t) != 0) 
+	{
 		throw std::runtime_error("Shader code size is not a multiple of uint32_t");
 	}
 
 	std::vector<uint32_t> shaderCode(reinterpret_cast<const uint32_t*>(shaderCodeChar.data()),
 		reinterpret_cast<const uint32_t*>(shaderCodeChar.data() + shaderCodeChar.size()));
 
-	if (shaderCode.empty()) {
+	if (shaderCode.empty()) 
+	{
 		throw std::runtime_error("No shader code provided for validation");
 	}
 
 	spv_context context = spvContextCreate(SPV_ENV_VULKAN_1_0);
-	if (!context) {
+	if (!context) 
+	{
 		throw std::runtime_error("Failed to create SPIRV validation context");
 	}
 
@@ -237,25 +248,26 @@ bool SERenderPipeline::validate_spirv_code(const std::vector<char>& shaderCodeCh
 	spv_const_binary_t binary = { shaderCode.data(), shaderCode.size() };
 	spv_result_t result = spvValidate(context, &binary, &diagnostic);
 
-	if (result != SPV_SUCCESS) {
-		if (diagnostic) {
+	if (result != SPV_SUCCESS) 
+	{
+		if (diagnostic) 
+		{
 			std::ostringstream error_msg;
 			error_msg << "SPIRV validation failed with the following diagnostic: \n";
 			error_msg << diagnostic->error;
 			spvDiagnosticDestroy(diagnostic);
 			throw std::runtime_error(error_msg.str());
-		}
-		else {
+		} else {
 			throw std::runtime_error("SPIRV validation failed");
 		}
-	}
-	else {
+	} else {
 		std::cout << "SPIRV validation succeeded. Shader module size: "
 			<< shaderCodeChar.size() << " bytes. Number of SPIR-V instructions: "
 			<< shaderCode.size() << ".\n";
 	}
 
-	if (diagnostic) {
+	if (diagnostic) 
+	{
 		spvDiagnosticDestroy(diagnostic);
 	}
 	spvContextDestroy(context);

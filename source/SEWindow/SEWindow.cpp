@@ -4,7 +4,8 @@
 
 namespace SE {
 	
-SEWindow::SEWindow(uint32_t width, uint32_t height, std::string name) : m_WindowWidth{ width }, m_WindowHeight{ height }, m_WindowName{ name } {
+SEWindow::SEWindow(uint32_t width, uint32_t height, std::string name) : m_WindowWidth{ width }, m_WindowHeight{ height }, m_WindowName{ name } 
+{
 	init_window();
 }
 
@@ -35,7 +36,8 @@ void SEWindow::init_window()
 
 void SEWindow::create_window_surface(VkInstance instance, VkSurfaceKHR* surface)
 {
-	if (glfwCreateWindowSurface(instance, m_Window, nullptr, surface) != VK_SUCCESS) {
+	if (glfwCreateWindowSurface(instance, m_Window, nullptr, surface) != VK_SUCCESS) 
+	{
 		throw std::runtime_error("Failed to create window surface.");
 	}
 }

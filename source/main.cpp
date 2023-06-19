@@ -4,11 +4,13 @@
 #include <iostream>
 #include <stdexcept>
 
-int main() {
+int main() 
+{
 
 	SE::SEApp app{};
 
-	try {
+	try 
+	{
 		app.run();
 	} catch (const std::exception &e) {
 		std::cerr << e.what() << '\n';

@@ -4,10 +4,16 @@
 layout(location = 0) in vec2 position;
 layout(location = 1) in vec3 vertexColor;
 
-// output
-layout(location = 1) out vec3 vertexColorOut;
+layout(push_constant) uniform push 
+{
+    vec3 color;
+	vec2 offset;
+} Push;
 
-void main() {
-	gl_Position = vec4(position, 0, 1.0);
-	vertexColorOut = vertexColor;
+// output
+// layout(location = 1) out vec3 vertexColorOut;
+
+void main() 
+{
+	gl_Position = vec4(position + Push.offset, 0.0, 1.0);
 }
