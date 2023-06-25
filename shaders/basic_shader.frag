@@ -5,8 +5,9 @@
 
 layout(push_constant) uniform push 
 {
-    vec3 color;
+	mat2 transform;
 	vec2 offset;
+	vec3 color;
 } Push;
 
 // output

@@ -5,19 +5,21 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 namespace SE {
 
 	struct PushConstantData 
 	{
+		glm::mat2 transform{1.0f};
+		glm::vec2 offset;
 		alignas(16) glm::vec3 color;
-		alignas(16) glm::vec2 offset;
 	};
 
 #pragma region Lifecycle
 	SEApp::SEApp()
 	{
-		load_meshes();
+		load_game_objects();
 		create_pipeline_layout();
 		recreate_swap_chain();
 		create_command_buffers();
@@ -121,7 +123,7 @@ void SEApp::draw_frame()
 	}
 }
 
-void SEApp::load_meshes()
+void SEApp::load_game_objects()
 {
 	std::vector<SEMesh::Vertex> verticies 
 	{
@@ -130,7 +132,35 @@ void SEApp::load_meshes()
 		{ {-0.5f, 0.5f},	{0.0f, 0.0f, 0.5f} }
 	};
 
-	m_Mesh = std::make_unique<SEMesh>(m_GraphicsDevice, verticies);
+	auto mesh = std::make_shared<SEMesh>(m_GraphicsDevice, verticies);
+
+	auto TriangleGameObject = SEGameObject::create_game_object();
+	TriangleGameObject.m_Mesh = mesh;
+	TriangleGameObject.m_Color = { 0.1f, 0.12f, 0.15f };
+	TriangleGameObject.m_Transform2d.Translation.x = 0.2f;
+	TriangleGameObject.m_Transform2d.Scale = { 1.0f, 1.0f };
+	TriangleGameObject.m_Transform2d.Rotation = 0.25f * glm::two_pi<float>();
+
+	m_GameObjects.push_back(std::move(TriangleGameObject));
+}
+
+void SEApp::render_game_objects(VkCommandBuffer commandBuffer)
+{
+	m_Pipeline->bind_command_buffer(commandBuffer);
+
+	for (auto& obj : m_GameObjects) 
+	{
+		obj.m_Transform2d.Rotation += 0.001f;
+
+		PushConstantData push{};
+		push.offset = obj.m_Transform2d.Translation;
+		push.color = obj.m_Color;
+		push.transform = obj.m_Transform2d.get_mat2();
+
+		vkCmdPushConstants(commandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
+		obj.m_Mesh->bind_command_buffer(commandBuffer);
+		obj.m_Mesh->draw(commandBuffer);
+	}
 }
 
 void SEApp::recreate_swap_chain()
@@ -160,9 +190,6 @@ void SEApp::recreate_swap_chain()
 
 void SEApp::record_command_buffers(int32_t imageIndex)
 {
-	static int32_t frameNumber = 0;
-	frameNumber = (frameNumber + 1) % 1000;
-
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -198,18 +225,7 @@ void SEApp::record_command_buffers(int32_t imageIndex)
 	vkCmdSetViewport(m_CommandBuffers[imageIndex], 0, 1, &viewport);
 	vkCmdSetScissor(m_CommandBuffers[imageIndex], 0, 1, &scissor);
 
-	m_Pipeline->bind_command_buffer(m_CommandBuffers[imageIndex]);
-	m_Mesh->bind_command_buffer(m_CommandBuffers[imageIndex]);
-
-	for (int index = 0; index < 4; index++)
-	{
-		PushConstantData push{};
-		push.offset = { -0.5f + frameNumber * 0.001, -0.4f + index * 0.25f };
-		push.color = { 0.0f, 0.0f, 0.2f + 0.2f * index};
-
-		vkCmdPushConstants(m_CommandBuffers[imageIndex], m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
-		m_Mesh->draw(m_CommandBuffers[imageIndex]);
-	}
+	render_game_objects(m_CommandBuffers[imageIndex]);
 
 	vkCmdEndRenderPass(m_CommandBuffers[imageIndex]);
 

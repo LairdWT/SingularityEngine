@@ -1,10 +1,10 @@
 #pragma once
 
-#include "SEWindow/SEWindow.hpp"
-#include "SERenderPipeline/SERenderPipeline.hpp"
-#include "SEGraphicsDevice/SEGraphicsDevice.hpp"
-#include "SERenderPipeline/SESwapChain.hpp"
-#include "SECore/SEEntities/SEMesh.hpp"
+#include "SERendering/SEWindow/SEWindow.hpp"
+#include "SERendering/SERenderPipeline/SERenderPipeline.hpp"
+#include "SERendering/SEGraphicsDevice/SEGraphicsDevice.hpp"
+#include "SERendering/SERenderPipeline/SESwapChain.hpp"
+#include "SECore/SEEntities/SEGameObject.hpp"
 
 #include <memory>
 #include <vector>
@@ -34,7 +34,8 @@ private:
 	void create_pipeline();
 	void create_pipeline_layout();
 	void draw_frame();
-	void load_meshes();
+	void load_game_objects();
+	void render_game_objects(VkCommandBuffer commandBuffer);
 	void recreate_swap_chain();
 
 
@@ -45,7 +46,7 @@ private:
 	std::unique_ptr<SESwapChain> m_SwapChain;
 	std::unique_ptr<SERenderPipeline> m_Pipeline;
 	std::vector<VkCommandBuffer> m_CommandBuffers;
-	std::unique_ptr<SEMesh> m_Mesh;
+	std::vector<SEGameObject> m_GameObjects;
 };
 
 } // end SE namespace

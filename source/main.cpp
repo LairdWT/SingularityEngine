@@ -17,5 +17,5 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	return 1337;
+	return 0;
 }

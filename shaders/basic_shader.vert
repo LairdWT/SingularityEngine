@@ -6,8 +6,9 @@ layout(location = 1) in vec3 vertexColor;
 
 layout(push_constant) uniform push 
 {
-    vec3 color;
+	mat2 transform;
 	vec2 offset;
+	vec3 color;
 } Push;
 
 // output
@@ -15,5 +16,5 @@ layout(push_constant) uniform push
 
 void main() 
 {
-	gl_Position = vec4(position + Push.offset, 0.0, 1.0);
+	gl_Position = vec4(Push.transform * position + Push.offset, 0.0, 1.0);
 }
