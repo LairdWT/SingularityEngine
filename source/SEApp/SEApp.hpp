@@ -3,7 +3,7 @@
 #include "SERendering/SEWindow/SEWindow.hpp"
 #include "SERendering/SERenderPipeline/SERenderPipeline.hpp"
 #include "SERendering/SEGraphicsDevice/SEGraphicsDevice.hpp"
-#include "SERendering/SERenderPipeline/SESwapChain.hpp"
+#include "SERendering/SERenderer.hpp"
 #include "SECore/SEEntities/SEGameObject.hpp"
 
 #include <memory>
@@ -27,25 +27,23 @@ public:
 	static constexpr uint32_t m_WindowWidth = 1920;
 	static constexpr uint32_t m_WindowHeight = 1080;
 
+
 private:
-	void create_command_buffers();
-	void record_command_buffers(int32_t imageIndex);
-	void free_command_buffers();
+
 	void create_pipeline();
 	void create_pipeline_layout();
-	void draw_frame();
 	void load_game_objects();
 	void render_game_objects(VkCommandBuffer commandBuffer);
-	void recreate_swap_chain();
 
 
-	SEWindow m_SEWindow{m_WindowWidth, m_WindowHeight, "Singularity Engine"};
-	SEGraphicsDevice m_GraphicsDevice{ m_SEWindow };
+
+
+	SEWindow m_Window{m_WindowWidth, m_WindowHeight, "Singularity Engine"};
+	SEGraphicsDevice m_GraphicsDevice{ m_Window };
 	VkPipelineLayout m_PipelineLayout;
+	SERenderer m_Renderer{m_Window, m_GraphicsDevice};
 
-	std::unique_ptr<SESwapChain> m_SwapChain;
 	std::unique_ptr<SERenderPipeline> m_Pipeline;
-	std::vector<VkCommandBuffer> m_CommandBuffers;
 	std::vector<SEGameObject> m_GameObjects;
 };
 
