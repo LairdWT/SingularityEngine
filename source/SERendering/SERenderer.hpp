@@ -28,14 +28,10 @@ namespace SE {
 		void end_frame();
 		void begin_swap_chain_render_pass(VkCommandBuffer commandBuffer);
 		void end_swap_chain_render_pass(VkCommandBuffer commandBuffer);
-
 		bool is_frame_in_progress() const { return m_bIsFrameStarted; }
-		VkCommandBuffer get_current_command_buffer() const 
-		{ 
-			assert(m_bIsFrameStarted && "Can't get command buffer when frame is not in progress");
-			return m_CommandBuffers[m_CurrentImageIndex]; 
-		}
 		VkRenderPass get_swap_chain_render_pass() const { return m_SwapChain->get_render_pass(); }
+		VkCommandBuffer get_current_command_buffer() const;
+		uint32_t get_current_frame_index() const;
 
 	private:
 
@@ -52,6 +48,7 @@ namespace SE {
 		std::vector<VkCommandBuffer> m_CommandBuffers;
 
 		uint32_t m_CurrentImageIndex = 0;
+		uint32_t m_CurrentFrameIndex = 0;
 		bool m_bIsFrameStarted = false;
 	};
 

@@ -63,14 +63,13 @@ namespace SE {
 		{
 			m_SEWindow.reset_window_resized_flag();
 			recreate_swap_chain();
-		}
-
-		if (result != VK_SUCCESS)
+		} else if (result != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to present swap chain image.");
 		}
 
 		m_bIsFrameStarted = false;
+		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % SESwapChain::MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void SERenderer::begin_swap_chain_render_pass(VkCommandBuffer commandBuffer)
@@ -114,9 +113,21 @@ namespace SE {
 		vkCmdEndRenderPass(commandBuffer);
 	}
 
+	VkCommandBuffer SERenderer::get_current_command_buffer() const
+	{
+		assert(m_bIsFrameStarted && "Can't get command buffer when frame is not in progress");
+		return m_CommandBuffers[m_CurrentFrameIndex];
+	}
+
+	uint32_t SERenderer::get_current_frame_index() const
+	{
+		assert(m_bIsFrameStarted && "Can't get frame index when frame is not in progress");
+		return m_CurrentFrameIndex;
+	}
+
 	void SERenderer::create_command_buffers()
 	{
-		m_CommandBuffers.resize(m_SwapChain->get_image_count());
+		m_CommandBuffers.resize(SESwapChain::MAX_FRAMES_IN_FLIGHT);
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -150,13 +161,13 @@ namespace SE {
 		if (m_SwapChain == nullptr)
 		{
 			m_SwapChain = std::make_unique<SESwapChain>(m_GraphicsDevice, windowExtent);
-		}
-		else {
-			m_SwapChain = std::make_unique<SESwapChain>(m_GraphicsDevice, windowExtent, std::move(m_SwapChain));
-			if (m_SwapChain->get_image_count() != m_CommandBuffers.size())
+		} else {
+			std::shared_ptr<SESwapChain> oldSwapChain = std::move(m_SwapChain);
+			m_SwapChain = std::make_unique<SESwapChain>(m_GraphicsDevice, windowExtent, oldSwapChain);
+
+			if (!oldSwapChain->compare_swapchain_formats(*m_SwapChain.get()))
 			{
-				free_command_buffers();
-				create_command_buffers();
+				throw std::runtime_error("Swap chain image format has changed!");
 			}
 		}
 	}

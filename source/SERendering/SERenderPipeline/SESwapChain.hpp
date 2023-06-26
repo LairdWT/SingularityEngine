@@ -26,6 +26,7 @@ namespace SE {
 		VkImageView get_image_view(int index) { return m_SwapChainImageViews[index]; }
 		size_t get_image_count() { return m_SwapChainImages.size(); }
 		VkFormat get_swapchain_image_format() { return m_SwapChainImageFormat; }
+		bool compare_swapchain_formats(const SESwapChain& swapChain) const;
 		VkExtent2D get_spawchain_extent() { return m_SwapChainExtent; }
 		uint32_t get_swapchain_width() { return m_SwapChainExtent.width; }
 		uint32_t get_swapchain_height() { return m_SwapChainExtent.height; }
@@ -51,6 +52,7 @@ namespace SE {
 		VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities);
 
 		VkFormat m_SwapChainImageFormat;
+		VkFormat m_SwapChainDepthFormat;
 		VkExtent2D m_SwapChainExtent;
 
 		std::vector<VkFramebuffer> m_SwapChainFramebuffers;
