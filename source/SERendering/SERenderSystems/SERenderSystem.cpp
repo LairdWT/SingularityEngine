@@ -60,7 +60,7 @@ namespace SE {
 		}
 	}
 
-	void SERenderSystem::render_game_objects(VkCommandBuffer commandBuffer, std::vector<SEGameObject>& gameObjects)
+	void SERenderSystem::render_game_objects(VkCommandBuffer commandBuffer, std::vector<SEGameObject>& gameObjects, const SECamera& camera)
 	{
 		m_Pipeline->bind_command_buffer(commandBuffer);
 
@@ -71,7 +71,7 @@ namespace SE {
 
 			PushConstantData push{};
 			push.color = obj.m_Color;
-			push.transform = obj.m_TransformComponent.get_transform_matrix();
+			push.transform = camera.get_projection_matrix() * obj.m_TransformComponent.get_transform_matrix();
 
 			vkCmdPushConstants(commandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
 			obj.m_Mesh->bind_command_buffer(commandBuffer);

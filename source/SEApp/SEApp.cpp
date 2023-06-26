@@ -3,6 +3,7 @@
 #include <array>
 
 #include "SERendering/SERenderSystems/SERenderSystem.hpp"
+#include "SECore/SEEntities/SECamera.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -26,14 +27,19 @@ namespace SE {
 void SEApp::run()
 {
 	SERenderSystem RenderSystem{m_GraphicsDevice, m_Renderer.get_swap_chain_render_pass()};
+	SECamera camera{};
 
 	while (!m_Window.should_close()) 
 	{
 		glfwPollEvents();
+		float aspectRatio = m_Renderer.get_swap_chain_aspect_ratio();
+		// camera.set_orthographic_projection(-aspectRatio, aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f);
+		camera.set_perspective_projection(glm::radians(60.0f), aspectRatio, 0.01f, 100.0f);
+
 		if (VkCommandBuffer commandBuffer = m_Renderer.begin_frame())
 		{
 			m_Renderer.begin_swap_chain_render_pass(commandBuffer);
-			RenderSystem.render_game_objects(commandBuffer, m_GameObjects);
+			RenderSystem.render_game_objects(commandBuffer, m_GameObjects, camera);
 			m_Renderer.end_swap_chain_render_pass(commandBuffer);
 			m_Renderer.end_frame();
 		}
@@ -106,7 +112,7 @@ void SEApp::load_game_objects()
 	SEGameObject cube = SEGameObject::create_game_object();
 
 	cube.m_Mesh = cubeMesh;
-	cube.m_TransformComponent.Translation = { 0.0f, 0.0f, 0.5f };
+	cube.m_TransformComponent.Translation = { 0.0f, 0.0f, 2.5f };
 	cube.m_TransformComponent.Rotation = { 0.0f, 0.0f, 0.0f };
 	cube.m_TransformComponent.Scale = { 0.5f, 0.5f, 0.5f };
 

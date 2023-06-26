@@ -28,8 +28,9 @@ namespace SE {
 		void end_frame();
 		void begin_swap_chain_render_pass(VkCommandBuffer commandBuffer);
 		void end_swap_chain_render_pass(VkCommandBuffer commandBuffer);
-		bool is_frame_in_progress() const { return m_bIsFrameStarted; }
-		VkRenderPass get_swap_chain_render_pass() const { return m_SwapChain->get_render_pass(); }
+		bool is_frame_in_progress() const { return m_bIsFrameStarted; };
+		VkRenderPass get_swap_chain_render_pass() const { return m_SwapChain->get_render_pass(); };
+		float get_swap_chain_aspect_ratio() const { return m_SwapChain->get_extent_aspect_ratio(); };
 		VkCommandBuffer get_current_command_buffer() const;
 		uint32_t get_current_frame_index() const;
 
