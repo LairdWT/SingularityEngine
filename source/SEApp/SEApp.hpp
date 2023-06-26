@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SERendering/SEWindow/SEWindow.hpp"
-#include "SERendering/SERenderPipeline/SERenderPipeline.hpp"
 #include "SERendering/SEGraphicsDevice/SEGraphicsDevice.hpp"
 #include "SERendering/SERenderer.hpp"
 #include "SECore/SEEntities/SEGameObject.hpp"
@@ -30,20 +29,14 @@ public:
 
 private:
 
-	void create_pipeline();
-	void create_pipeline_layout();
 	void load_game_objects();
-	void render_game_objects(VkCommandBuffer commandBuffer);
-
 
 
 
 	SEWindow m_Window{m_WindowWidth, m_WindowHeight, "Singularity Engine"};
 	SEGraphicsDevice m_GraphicsDevice{ m_Window };
-	VkPipelineLayout m_PipelineLayout;
 	SERenderer m_Renderer{m_Window, m_GraphicsDevice};
 
-	std::unique_ptr<SERenderPipeline> m_Pipeline;
 	std::vector<SEGameObject> m_GameObjects;
 };
 
