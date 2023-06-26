@@ -11,8 +11,7 @@ namespace SE {
 
 	struct PushConstantData
 	{
-		glm::mat2 transform{1.0f};
-		glm::vec2 offset;
+		glm::mat4 transform{1.0f};
 		alignas(16) glm::vec3 color;
 	};
 
@@ -67,12 +66,12 @@ namespace SE {
 
 		for (auto& obj : gameObjects)
 		{
-			obj.m_Transform2d.Rotation += 0.001f;
+			obj.m_TransformComponent.Rotation.y += 0.01;
+			obj.m_TransformComponent.Rotation.x += 0.015f;
 
 			PushConstantData push{};
-			push.offset = obj.m_Transform2d.Translation;
 			push.color = obj.m_Color;
-			push.transform = obj.m_Transform2d.get_mat2();
+			push.transform = obj.m_TransformComponent.get_transform_matrix();
 
 			vkCmdPushConstants(commandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
 			obj.m_Mesh->bind_command_buffer(commandBuffer);

@@ -42,25 +42,75 @@ void SEApp::run()
 	vkDeviceWaitIdle(m_GraphicsDevice.device());
 }
 
+std::unique_ptr<SEMesh> createCubeModel(SEGraphicsDevice& device, glm::vec3 offset) {
+	std::vector<SEMesh::Vertex> vertices{
+
+		// left face (white)
+		{{-.5f, -.5f, -.5f}, { .9f, .9f, .9f }},
+		{ {-.5f, .5f, .5f}, {.9f, .9f, .9f} },
+		{ {-.5f, -.5f, .5f}, {.9f, .9f, .9f} },
+		{ {-.5f, -.5f, -.5f}, {.9f, .9f, .9f} },
+		{ {-.5f, .5f, -.5f}, {.9f, .9f, .9f} },
+		{ {-.5f, .5f, .5f}, {.9f, .9f, .9f} },
+
+			// right face (yellow)
+		{ {.5f, -.5f, -.5f}, {.8f, .8f, .1f} },
+		{ {.5f, .5f, .5f}, {.8f, .8f, .1f} },
+		{ {.5f, -.5f, .5f}, {.8f, .8f, .1f} },
+		{ {.5f, -.5f, -.5f}, {.8f, .8f, .1f} },
+		{ {.5f, .5f, -.5f}, {.8f, .8f, .1f} },
+		{ {.5f, .5f, .5f}, {.8f, .8f, .1f} },
+
+			// top face (orange, remember y axis points down)
+		{ {-.5f, -.5f, -.5f}, {.9f, .6f, .1f} },
+		{ {.5f, -.5f, .5f}, {.9f, .6f, .1f} },
+		{ {-.5f, -.5f, .5f}, {.9f, .6f, .1f} },
+		{ {-.5f, -.5f, -.5f}, {.9f, .6f, .1f} },
+		{ {.5f, -.5f, -.5f}, {.9f, .6f, .1f} },
+		{ {.5f, -.5f, .5f}, {.9f, .6f, .1f} },
+
+			// bottom face (red)
+		{ {-.5f, .5f, -.5f}, {.8f, .1f, .1f} },
+		{ {.5f, .5f, .5f}, {.8f, .1f, .1f} },
+		{ {-.5f, .5f, .5f}, {.8f, .1f, .1f} },
+		{ {-.5f, .5f, -.5f}, {.8f, .1f, .1f} },
+		{ {.5f, .5f, -.5f}, {.8f, .1f, .1f} },
+		{ {.5f, .5f, .5f}, {.8f, .1f, .1f} },
+
+			// nose face (blue)
+		{ {-.5f, -.5f, 0.5f}, {.1f, .1f, .8f} },
+		{ {.5f, .5f, 0.5f}, {.1f, .1f, .8f} },
+		{ {-.5f, .5f, 0.5f}, {.1f, .1f, .8f} },
+		{ {-.5f, -.5f, 0.5f}, {.1f, .1f, .8f} },
+		{ {.5f, -.5f, 0.5f}, {.1f, .1f, .8f} },
+		{ {.5f, .5f, 0.5f}, {.1f, .1f, .8f} },
+
+			// tail face (green)
+		{ {-.5f, -.5f, -0.5f}, {.1f, .8f, .1f} },
+		{ {.5f, .5f, -0.5f}, {.1f, .8f, .1f} },
+		{ {-.5f, .5f, -0.5f}, {.1f, .8f, .1f} },
+		{ {-.5f, -.5f, -0.5f}, {.1f, .8f, .1f} },
+		{ {.5f, -.5f, -0.5f}, {.1f, .8f, .1f} },
+		{ {.5f, .5f, -0.5f}, {.1f, .8f, .1f} },
+
+	};
+	for (auto& v : vertices) {
+		v.position += offset;
+	}
+	return std::make_unique<SEMesh>(device, vertices);
+}
+
 void SEApp::load_game_objects()
 {
-	std::vector<SEMesh::Vertex> verticies 
-	{
-		{ {0.0f, -0.5f},	{0.5f, 0.0f, 0.0f} },
-		{ {0.5f, 0.5f},	{0.0f, 0.5f, 0.0f} },
-		{ {-0.5f, 0.5f},	{0.0f, 0.0f, 0.5f} }
-	};
+	std::shared_ptr<SEMesh> cubeMesh = createCubeModel(m_GraphicsDevice, glm::vec3{ 0, 0, 0 });
+	SEGameObject cube = SEGameObject::create_game_object();
 
-	auto mesh = std::make_shared<SEMesh>(m_GraphicsDevice, verticies);
+	cube.m_Mesh = cubeMesh;
+	cube.m_TransformComponent.Translation = { 0.0f, 0.0f, 0.5f };
+	cube.m_TransformComponent.Rotation = { 0.0f, 0.0f, 0.0f };
+	cube.m_TransformComponent.Scale = { 0.5f, 0.5f, 0.5f };
 
-	auto TriangleGameObject = SEGameObject::create_game_object();
-	TriangleGameObject.m_Mesh = mesh;
-	TriangleGameObject.m_Color = { 0.1f, 0.12f, 0.25f };
-	TriangleGameObject.m_Transform2d.Translation.x = 0.2f;
-	TriangleGameObject.m_Transform2d.Scale = { 1.0f, 1.0f };
-	TriangleGameObject.m_Transform2d.Rotation = 0.25f * glm::two_pi<float>();
-
-	m_GameObjects.push_back(std::move(TriangleGameObject));
+	m_GameObjects.push_back(std::move(cube));
 }
 
 } // namespace SE

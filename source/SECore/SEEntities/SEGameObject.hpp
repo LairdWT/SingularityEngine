@@ -4,25 +4,48 @@
 #include <memory>
 
 #include "SEMesh.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 namespace SE {
 
-	struct Transform2dComponent {
-		glm::vec2 Translation{};
-		glm::vec2 Scale{1.0f, 1.0f};
-		float Rotation;
+	struct TransformComponent {
+		glm::vec3 Translation{};
+		glm::vec3 Scale{1.0f, 1.0f, 1.0f};
+		glm::vec3 Rotation{};
 
-		glm::mat2 get_mat2() 
-		{	
-			const float s = glm::sin(Rotation);
-			const float c = glm::cos(Rotation);
-			glm::mat2 RotationMatrix{{c, s}, {-s, c}};
+		glm::mat4 get_transform_matrix() const 
+		{
+			const float c3 = glm::cos(Rotation.z);
+			const float s3 = glm::sin(Rotation.z);
+			const float c2 = glm::cos(Rotation.x);
+			const float s2 = glm::sin(Rotation.x);
+			const float c1 = glm::cos(Rotation.y);
+			const float s1 = glm::sin(Rotation.y);
 
-			glm::mat2 ScaleMatrix{{Scale.x, 0.0f}, { 0.0f, Scale.y }};
-			return RotationMatrix * ScaleMatrix;
+			return glm::mat4
+			{
+				{
+					Scale.x* (c1* c3 + s1 * s2 * s3),
+					Scale.x* (c2* s3),
+					Scale.x* (c1* s2* s3 - c3 * s1),
+					0.0f,
+				},
+				{
+					Scale.y * (c3 * s1 * s2 - c1 * s3),
+					Scale.y * (c2 * c3),
+					Scale.y * (c1 * c3 * s2 + s1 * s3),
+					0.0f,
+				},
+				{
+					Scale.z * (c2 * s1),
+					Scale.z * (-s2),
+					Scale.z * (c1 * c2),
+					0.0f,
+				},
+				{ Translation.x, Translation.y, Translation.z, 1.0f }
+			};
 		}
 	};
-
 
 	class SEGameObject {
 
@@ -45,7 +68,7 @@ namespace SE {
 
 	std::shared_ptr<SEMesh> m_Mesh{};
 	glm::vec3 m_Color{};
-	Transform2dComponent m_Transform2d{};
+	TransformComponent m_TransformComponent{};
 
 	private:
 	id_type m_Id;
