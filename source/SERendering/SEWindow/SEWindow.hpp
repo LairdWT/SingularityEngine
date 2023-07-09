@@ -24,6 +24,9 @@ public:
 	bool was_window_resized() { return m_FramebufferResized; };
 	void reset_window_resized_flag() { m_FramebufferResized = false; };
 
+	// Getters
+	GLFWwindow* get_window() const { return m_Window; };
+
 private:
 
 	static void framebuffer_resize_callback(GLFWwindow* window, int width, int height);

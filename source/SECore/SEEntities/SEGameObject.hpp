@@ -5,6 +5,7 @@
 
 #include "SEMesh.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/euler_angles.hpp"
 
 namespace SE {
 
@@ -65,6 +66,14 @@ namespace SE {
 
 	uint32_t get_game_object_id() const { return m_Id; }
 
+	// Getters
+	glm::vec3 get_forward_vector() const;
+	glm::vec3 get_right_vector() const;
+	glm::vec3 get_up_vector() const;
+
+	// Movement
+	void rotate_using_delta(const glm::vec3& rotationDelta);
+	void translate_using_delta(const glm::vec3& translationDelta);
 
 	std::shared_ptr<SEMesh> m_Mesh{};
 	glm::vec3 m_Color{};

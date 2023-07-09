@@ -5,6 +5,7 @@
 
 #include "SERendering/SERenderSystems/SERenderSystem.hpp"
 #include "SECore/SEEntities/SECamera.hpp"
+#include "SECore/SEInput/SEKeyboardInputController.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -31,7 +32,10 @@ void SEApp::run()
 {
 	SERenderSystem RenderSystem{m_GraphicsDevice, m_Renderer.get_swap_chain_render_pass()};
 	SECamera camera{};
-	// camera.set_view_direction(glm::vec3{0.0f}, glm::vec3{0.5f, 0.0f, 1.0f});
+	SEGameObject viewerObject = SEGameObject::create_game_object();
+	SEKeyboardInputController cameraInputController{};
+
+	// Look at cube
 	camera.set_view_target(glm::vec3{-1.0f, -2.0f, 2.0f}, glm::vec3{0.0f, 0.0f, 2.5f});
 
 	m_TimeManager->update();
@@ -40,10 +44,14 @@ void SEApp::run()
 	{
 		glfwPollEvents();
 
+		// Update Time
 		m_TimeManager->update();
 
+		// Update Camera
+		cameraInputController.move_in_xz_plane(m_Window.get_window(), viewerObject, m_TimeManager->get_delta_time());
+		camera.set_view_yxz(viewerObject.m_TransformComponent.Translation, viewerObject.m_TransformComponent.Rotation);
+
 		float aspectRatio = m_Renderer.get_swap_chain_aspect_ratio();
-		// camera.set_orthographic_projection(-aspectRatio, aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f);
 		camera.set_perspective_projection(glm::radians(60.0f), aspectRatio, 0.01f, 100.0f);
 
 		if (VkCommandBuffer commandBuffer = m_Renderer.begin_frame())
