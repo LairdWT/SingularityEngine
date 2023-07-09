@@ -388,7 +388,7 @@ namespace SE {
 	VkPresentModeKHR SESwapChain::choose_swap_present_mode(const std::vector<VkPresentModeKHR>& availablePresentModes) 
 	{
 		
-		/* The following present mode consumes high power - not suitable for mobile devices
+
 		 
 		for (const auto& availablePresentMode : availablePresentModes) {
 			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -397,6 +397,7 @@ namespace SE {
 			}
 		}
 
+		/* The following present mode consumes high power - not suitable for mobile devices
 		for (const auto &availablePresentMode : availablePresentModes) {
 			if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
 				std::cout << "Present mode: Immediate" << std::endl;
