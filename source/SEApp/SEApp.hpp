@@ -4,6 +4,7 @@
 #include "SERendering/SEGraphicsDevice/SEGraphicsDevice.hpp"
 #include "SERendering/SERenderer.hpp"
 #include "SECore/SEEntities/SEGameObject.hpp"
+#include "SECore/SEUtilities/SETimeManager.hpp"
 
 #include <memory>
 #include <vector>
@@ -31,13 +32,12 @@ private:
 
 	void load_game_objects();
 
-
-
 	SEWindow m_Window{m_WindowWidth, m_WindowHeight, "Singularity Engine"};
 	SEGraphicsDevice m_GraphicsDevice{ m_Window };
 	SERenderer m_Renderer{m_Window, m_GraphicsDevice};
 
 	std::vector<SEGameObject> m_GameObjects;
+	std::unique_ptr<SETimeManager> m_TimeManager;
 };
 
 } // end SE namespace

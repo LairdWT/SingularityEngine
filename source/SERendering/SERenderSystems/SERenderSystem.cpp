@@ -64,14 +64,13 @@ namespace SE {
 	{
 		m_Pipeline->bind_command_buffer(commandBuffer);
 
+		auto projectionView = camera.get_projection_matrix() * camera.get_view_matrix();
+
 		for (auto& obj : gameObjects)
 		{
-			obj.m_TransformComponent.Rotation.y += 0.01;
-			obj.m_TransformComponent.Rotation.x += 0.015f;
-
 			PushConstantData push{};
 			push.color = obj.m_Color;
-			push.transform = camera.get_projection_matrix() * obj.m_TransformComponent.get_transform_matrix();
+			push.transform = projectionView * obj.m_TransformComponent.get_transform_matrix();
 
 			vkCmdPushConstants(commandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
 			obj.m_Mesh->bind_command_buffer(commandBuffer);
