@@ -23,16 +23,18 @@ public:
 #pragma endregion Lifecycle
 
 	void run();
+	void on_tick();
 
 	static constexpr uint32_t m_WindowWidth = 1920;
 	static constexpr uint32_t m_WindowHeight = 1080;
-
+	const std::string m_WindowName = "Singularity Engine";
+	const float m_FixedTimeStep = 1.0f / 60.0f; // 60 fps
 
 private:
 
 	void load_game_objects();
 
-	SEWindow m_Window{m_WindowWidth, m_WindowHeight, "Singularity Engine"};
+	SEWindow m_Window{m_WindowWidth, m_WindowHeight, m_WindowName};
 	SEGraphicsDevice m_GraphicsDevice{ m_Window };
 	SERenderer m_Renderer{m_Window, m_GraphicsDevice};
 

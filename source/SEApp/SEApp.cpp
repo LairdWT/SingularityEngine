@@ -1,7 +1,8 @@
 #include "SEApp.hpp"
 #include <stdexcept>
 #include <array>
-
+#include <iostream>
+#include <iomanip>
 
 #include "SERendering/SERenderSystems/SERenderSystem.hpp"
 #include "SECore/SEEntities/SECamera.hpp"
@@ -18,8 +19,8 @@ namespace SE {
 	SEApp::SEApp()
 	{
 		load_game_objects();
-		m_TimeManager = std::make_unique<SETimeManager>();
-		m_TimeManager->initialize();
+		m_TimeManager = std::make_unique<SETimeManager>(m_FixedTimeStep);
+		m_TimeManager->add_tick_delegate(std::bind(&SEApp::on_tick, this));
 	}
 
 	SEApp::~SEApp()
@@ -65,6 +66,14 @@ void SEApp::run()
 
 	vkDeviceWaitIdle(m_GraphicsDevice.device());
 }
+
+void SEApp::on_tick()
+{
+	std::cout << "\rCurrent Tick Time: " << std::setw(3) << m_TimeManager->get_fixed_time_step()
+		<< "   Current FPS: " << std::setw(3) << m_TimeManager->get_fps()
+		<< "   " << std::flush;
+}
+
 
 std::unique_ptr<SEMesh> createCubeModel(SEGraphicsDevice& device, glm::vec3 offset) {
 	std::vector<SEMesh::Vertex> vertices{
