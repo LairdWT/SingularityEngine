@@ -40,7 +40,7 @@ private:
 
 	std::vector<SEGameObject> m_GameObjects;
 	std::unique_ptr<SETimeManager> m_TimeManager;
-	std::size_t m_tickDelegateHandle{0};
+	SETickDelegate m_TickDelegate;
 	uint64_t m_TickCounter{0};
 };
 

@@ -6,6 +6,16 @@
 
 namespace SE {
 
+enum class ETickDelegateStatus {
+	Valid,
+	Invalid
+};
+
+struct SETickDelegate {
+	std::size_t Key;
+	ETickDelegateStatus Status{ETickDelegateStatus::Invalid};
+};
+
 class SETimeManager {
 public:
 
@@ -28,9 +38,9 @@ public:
 	// Updates the time manager, calculating the delta time and executing tick delegates
 	void update();
 	// Adds a delegate function that will be called on each tick of the game loop
-	std::size_t  add_tick_delegate(std::function<void()> tickDelegate);
+	SETickDelegate add_tick_delegate(std::function<void()> tickDelegate);
 	// Removes a delegate function
-	void remove_tick_delegate(std::size_t key);
+	void remove_tick_delegate(SETickDelegate& delegate);
 	// Prints the current frames per second to the console
 	void print_fps();
 
@@ -45,19 +55,20 @@ public:
 
 private:
 
+	// Frame time data
 	std::chrono::time_point<std::chrono::steady_clock> m_LastFrameTime;
 	std::chrono::time_point<std::chrono::steady_clock> m_CurrentFrameTime;
+	std::chrono::time_point<std::chrono::steady_clock> m_LastFPSCalculation;
 	float m_DeltaTime{ 0.0f };
-	float m_AccumulatedTime;
+	double m_AccumulatedTime;
 	float m_FixedTimeStep;
 	uint16_t m_FrameCount{ 0 };
 	uint16_t m_FPS{ 0 };
-	std::chrono::time_point<std::chrono::steady_clock> m_LastFPSCalculation;
+
 
 	// Tick delegates data
 	std::size_t m_NextDelegateKey = 0;  // The key that will be assigned to the next delegate added
 	std::vector<std::function<void()>> m_TickDelegates;  // The vector of delegates
-	std::map<std::size_t, std::size_t> m_TickDelegateKeys;  // Maps keys to indices in the vector
-	std::map<std::size_t, std::size_t> m_TickDelegateIndices;
+	std::unordered_map<std::size_t, std::size_t> m_TickDelegateKeys;
 };
 } // end SE namespace

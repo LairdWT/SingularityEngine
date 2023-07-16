@@ -39,7 +39,7 @@ void SEApp::run()
 	// Look at cube
 	camera.set_view_target(glm::vec3{-1.0f, -2.0f, 2.0f}, glm::vec3{0.0f, 0.0f, 2.5f});
 
-	m_tickDelegateHandle = m_TimeManager->add_tick_delegate(std::bind(&SEApp::on_tick, this));
+	m_TickDelegate = m_TimeManager->add_tick_delegate(std::bind(&SEApp::on_tick, this));
 	m_TimeManager->update();
 
 	while (!m_Window.should_close()) 
@@ -63,12 +63,12 @@ void SEApp::run()
 			m_Renderer.end_swap_chain_render_pass(commandBuffer);
 			m_Renderer.end_frame();
 		}
+	}
 
-		m_TickCounter++;
-		if (m_TickCounter > 50000)
-		{
-			m_TimeManager->remove_tick_delegate(m_tickDelegateHandle);
-		}
+	m_TickCounter++;
+	if (m_TickCounter > 30000)
+	{
+		m_TimeManager->remove_tick_delegate(m_TickDelegate);
 	}
 
 	vkDeviceWaitIdle(m_GraphicsDevice.device());
