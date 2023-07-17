@@ -41,7 +41,7 @@ private:
 	std::vector<SEGameObject> m_GameObjects;
 	std::unique_ptr<SETimeManager> m_TimeManager;
 	SETickDelegate m_TickDelegate;
-	uint64_t m_TickCounter{0};
+	std::atomic<uint64_t> m_TickCounter{0};
 };
 
 } // end SE namespace

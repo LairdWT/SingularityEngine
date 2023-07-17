@@ -1,6 +1,6 @@
 #include "SERenderPipeline.hpp"
 
-#include "SECore/SEEntities/SEMesh.hpp"
+#include "SECore/SEComponents/SEMesh.hpp"
 
 #include <spirv-tools/libspirv.h>
 #include <fstream>
