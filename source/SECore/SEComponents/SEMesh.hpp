@@ -8,7 +8,6 @@
 
 #include <vector>
 #include <memory>
-#include <iostream>
 
 namespace SE {
 
@@ -23,6 +22,12 @@ namespace SE {
 
 			static std::vector<VkVertexInputBindingDescription> get_binding_descriptions();
 			static std::vector<VkVertexInputAttributeDescription> get_attribute_descriptions();
+
+			// Equality operator
+			bool operator==(const Vertex& other) const 
+			{
+				return position == other.position && color == other.color && normal == other.normal && texCoord == other.texCoord;
+			}
 		};
 
 		struct Builder {

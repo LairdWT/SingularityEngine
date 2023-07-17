@@ -1,8 +1,28 @@
 #include "SEMesh.hpp"
+#include "SECore/SEUtilities/SEHashUtilities.hpp"
+
 #include <cassert>
+#include <unordered_map>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tinyobjloader.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
+
+namespace std
+{
+	template <> 
+	struct hash<SE::SEMesh::Vertex>
+	{
+		size_t operator()(SE::SEMesh::Vertex const& vertex) const
+		{
+			size_t seed = 0;
+			SE::hash_combine(seed, vertex.position, vertex.color, vertex.normal, vertex.texCoord);
+			return seed;
+		}
+	};
+}
+
 
 namespace SE {
 
@@ -29,8 +49,6 @@ std::unique_ptr<SEMesh> SEMesh::create_model_from_file(SEGraphicsDevice& device,
 {
 	Builder builder{};
 	load_mesh_from_file(builder, filepath);
-	std::cout << "Loaded model from file: " << filepath << "\n";
-	std::cout << "Vertex Count: " << builder.vertices.size() << "\n";
 	return std::make_unique<SEMesh>(device, builder);
 }
 
@@ -49,6 +67,8 @@ void SEMesh::load_mesh_from_file(Builder& builder, const std::string& filepath)
 	builder.vertices.clear();
 	builder.indices.clear();
 
+	std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
 	for (const auto& shape : shapes)
 	{
 		for (const auto& index : shape.mesh.indices)
@@ -63,19 +83,13 @@ void SEMesh::load_mesh_from_file(Builder& builder, const std::string& filepath)
 					attrib.vertices[3 * index.vertex_index + 1],
 					attrib.vertices[3 * index.vertex_index + 2]
 				};
-			}
 
-			uint32_t colorIndex = 3 * index.vertex_index + 2;
-			if (colorIndex < attrib.colors.size())
-			{
 				vertex.color =
 				{
-					attrib.colors[colorIndex - 2],
-					attrib.colors[colorIndex - 1],
-					attrib.colors[colorIndex]
+					attrib.colors[3 * index.vertex_index + 0],
+					attrib.colors[3 * index.vertex_index + 1],
+					attrib.colors[3 * index.vertex_index + 2]
 				};
-			} else {
-				vertex.color = { 0.18f, 0.18f, 0.18f };
 			}
 
 			if (index.normal_index >= 0)
@@ -97,7 +111,12 @@ void SEMesh::load_mesh_from_file(Builder& builder, const std::string& filepath)
 				};
 			}
 
-			builder.vertices.push_back(vertex);
+			if (uniqueVertices.count(vertex) == 0)
+			{
+				uniqueVertices[vertex] = static_cast<uint32_t>(builder.vertices.size());
+				builder.vertices.push_back(vertex);
+			}
+			builder.indices.push_back(uniqueVertices[vertex]);
 		}
 	}
 }
@@ -210,19 +229,12 @@ std::vector<VkVertexInputBindingDescription> SEMesh::Vertex::get_binding_descrip
 
 std::vector<VkVertexInputAttributeDescription> SEMesh::Vertex::get_attribute_descriptions()
 {
-	std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
 	
-	// Vertex Position
-	attributeDescriptions[0].binding = 0;
-	attributeDescriptions[0].location = 0;
-	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-	attributeDescriptions[0].offset = offsetof(Vertex, position);
-
-	// Vertex Color
-	attributeDescriptions[1].binding = 0;
-	attributeDescriptions[1].location = 1;
-	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-	attributeDescriptions[1].offset = offsetof(Vertex, color);
+	attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
+	attributeDescriptions.push_back({ 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color) });
+	attributeDescriptions.push_back({ 2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal) });
+	attributeDescriptions.push_back({ 3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord) });
 
 	return attributeDescriptions;
 }

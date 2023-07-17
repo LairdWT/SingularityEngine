@@ -1,4 +1,5 @@
 #include "SERendering/SERenderSystems/SERenderSystem.hpp"
+#include "SECore/SEUtilities/SEMatrixUtilities.hpp"
 #include <stdexcept>
 #include <array>
 
@@ -12,7 +13,7 @@ namespace SE {
 	struct PushConstantData
 	{
 		glm::mat4 transform{1.0f};
-		alignas(16) glm::vec3 color;
+		glm::mat4 normalMatrix{1.0f};
 	};
 
 #pragma region Lifecycle
@@ -69,8 +70,9 @@ namespace SE {
 		for (auto& obj : gameObjects)
 		{
 			PushConstantData push{};
-			push.color = obj.m_Color;
-			push.transform = projectionView * obj.m_TransformComponent.get_transform_matrix();
+			auto modelMatrix = get_transform_matrix(obj.m_TransformComponent.Translation, obj.m_TransformComponent.Rotation, obj.m_TransformComponent.Scale);
+			push.transform = projectionView * modelMatrix;
+			push.normalMatrix = get_normal_matrix(obj.m_TransformComponent.Translation, obj.m_TransformComponent.Rotation, obj.m_TransformComponent.Scale);
 
 			vkCmdPushConstants(commandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
 			obj.m_Mesh->bind_command_buffer(commandBuffer);

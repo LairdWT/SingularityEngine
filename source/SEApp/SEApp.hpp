@@ -4,7 +4,7 @@
 #include "SERendering/SEGraphicsDevice/SEGraphicsDevice.hpp"
 #include "SERendering/SERenderer.hpp"
 #include "SECore/SEEntities/SEGameObject.hpp"
-#include "SECore/SEUtilities/SETimeManager.hpp"
+#include "SECore/SESystems/SETimeManager.hpp"
 
 #include <memory>
 #include <vector>
@@ -28,7 +28,7 @@ public:
 	static constexpr uint32_t m_WindowWidth = 1920;
 	static constexpr uint32_t m_WindowHeight = 1080;
 	const std::string m_WindowName = "Singularity Engine";
-	const float m_FixedTimeStep = 1.0f / 60.0f; // 60 fps
+	const float m_FixedTimeStep = 1.0f / 240.0f; // 240 fps
 
 private:
 

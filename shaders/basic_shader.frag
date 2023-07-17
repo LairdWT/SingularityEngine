@@ -8,11 +8,11 @@ layout(location = 0) out vec4 outColor;
 
 layout(push_constant) uniform push 
 {
-	mat4 transform;
-	vec3 color;
+	mat4 transform; // projection * view * model
+	mat4 normalMatrix;
 } Push;
 
 void main() 
 {
-	outColor = vec4(0.18, 0.18, 0.18, 1.0);
+	outColor = vec4 (vertexColor, 1.0);
 };

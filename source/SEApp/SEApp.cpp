@@ -81,14 +81,20 @@ void SEApp::on_tick()
 void SEApp::load_game_objects()
 {
 	std::shared_ptr<SEMesh> seMesh = SEMesh::create_model_from_file(m_GraphicsDevice, "content/models/starter/sm_gadgetbot.obj");
+	
 	SEGameObject gameObject = SEGameObject::create_game_object();
-
 	gameObject.m_Mesh = seMesh;
 	gameObject.m_TransformComponent.Translation = { 0.0f, 0.0f, 2.5f };
 	gameObject.m_TransformComponent.Rotation = { 0.0f, 0.0f, 0.0f };
 	gameObject.m_TransformComponent.Scale = { 0.5f, 0.5f, 0.5f };
-
 	m_GameObjects.push_back(std::move(gameObject));
+
+	SEGameObject gameObjectTwo = SEGameObject::create_game_object();
+	gameObjectTwo.m_Mesh = seMesh;
+	gameObjectTwo.m_TransformComponent.Translation = { 1.0f, 0.0f, 2.5f };
+	gameObjectTwo.m_TransformComponent.Rotation = { 0.0f, 0.0f, 0.0f };
+	gameObjectTwo.m_TransformComponent.Scale = { 0.7f, 0.7f, 0.7f };
+	m_GameObjects.push_back(std::move(gameObjectTwo));
 }
 
 } // namespace SE
