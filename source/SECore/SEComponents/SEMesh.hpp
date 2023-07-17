@@ -7,6 +7,8 @@
 #include <glm/glm.hpp>
 
 #include <vector>
+#include <memory>
+#include <iostream>
 
 namespace SE {
 
@@ -14,8 +16,10 @@ namespace SE {
 
 	public:
 		struct Vertex {
-			glm::vec3 position;
-			glm::vec3 color;
+			glm::vec3 position{};
+			glm::vec3 color{};
+			glm::vec3 normal{};
+			glm::vec2 texCoord{};
 
 			static std::vector<VkVertexInputBindingDescription> get_binding_descriptions();
 			static std::vector<VkVertexInputAttributeDescription> get_attribute_descriptions();
@@ -32,6 +36,10 @@ namespace SE {
 		SEMesh(const SEMesh&) = delete;
 		SEMesh& operator=(const SEMesh&) = delete;
 #pragma endregion Lifecycle
+
+		// Load a model from a file
+		static std::unique_ptr<SEMesh> create_model_from_file(SEGraphicsDevice& device, const std::string& filepath);
+		static void load_mesh_from_file(Builder& builder, const std::string& filepath);
 
 		void bind_command_buffer(VkCommandBuffer commandBuffer);
 		void draw(VkCommandBuffer commandBuffer);

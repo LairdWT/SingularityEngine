@@ -78,70 +78,17 @@ void SEApp::on_tick()
 	std::cout << ss.str() << std::flush;
 }
 
-
-std::unique_ptr<SEMesh> createCubeModel(SEGraphicsDevice& device, glm::vec3 offset) 
-{
-	SEMesh::Builder modelBuilder{};
-	modelBuilder.vertices = 
-		{
-			// left face (white)
-			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-			{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-			{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-			{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
-
-			// right face (yellow)
-			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-			{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-			{{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
-			{{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
-
-			// top face (orange, y axis points down)
-			{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-			{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-			{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-			{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-
-			// bottom face (red)
-			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-			{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-			{{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
-			{{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-
-			// nose face (blue)
-			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-			{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-			{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-			{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-
-			// tail face (green)
-			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-			{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-			{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-			{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-		};
-
-	for (auto& v : modelBuilder.vertices) {
-		v.position += offset;
-	}
-
-	modelBuilder.indices = { 0,  1,  2,  0,  3,  1,  4,  5,  6,  4,  7,  5,  8,  9,  10, 8,  11, 9,
-						12, 13, 14, 12, 15, 13, 16, 17, 18, 16, 19, 17, 20, 21, 22, 20, 23, 21 };
-
-	return std::make_unique<SEMesh>(device, modelBuilder);
-}
-
 void SEApp::load_game_objects()
 {
-	std::shared_ptr<SEMesh> cubeMesh = createCubeModel(m_GraphicsDevice, glm::vec3{ 0, 0, 0 });
-	SEGameObject cube = SEGameObject::create_game_object();
+	std::shared_ptr<SEMesh> seMesh = SEMesh::create_model_from_file(m_GraphicsDevice, "content/models/starter/sm_gadgetbot.obj");
+	SEGameObject gameObject = SEGameObject::create_game_object();
 
-	cube.m_Mesh = cubeMesh;
-	cube.m_TransformComponent.Translation = { 0.0f, 0.0f, 2.5f };
-	cube.m_TransformComponent.Rotation = { 0.0f, 0.0f, 0.0f };
-	cube.m_TransformComponent.Scale = { 0.5f, 0.5f, 0.5f };
+	gameObject.m_Mesh = seMesh;
+	gameObject.m_TransformComponent.Translation = { 0.0f, 0.0f, 2.5f };
+	gameObject.m_TransformComponent.Rotation = { 0.0f, 0.0f, 0.0f };
+	gameObject.m_TransformComponent.Scale = { 0.5f, 0.5f, 0.5f };
 
-	m_GameObjects.push_back(std::move(cube));
+	m_GameObjects.push_back(std::move(gameObject));
 }
 
 } // namespace SE

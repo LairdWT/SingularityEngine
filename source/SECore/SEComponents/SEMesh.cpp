@@ -1,6 +1,9 @@
 #include "SEMesh.hpp"
 #include <cassert>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tinyobjloader.hpp>
+
 namespace SE {
 
 
@@ -19,6 +22,83 @@ SEMesh::~SEMesh()
 	{
 		vkDestroyBuffer(m_GraphicsDevice.device(), m_IndexBuffer, nullptr);
 		vkFreeMemory(m_GraphicsDevice.device(), m_IndexBufferMemory, nullptr);
+	}
+}
+
+std::unique_ptr<SEMesh> SEMesh::create_model_from_file(SEGraphicsDevice& device, const std::string& filepath)
+{
+	Builder builder{};
+	load_mesh_from_file(builder, filepath);
+	std::cout << "Loaded model from file: " << filepath << "\n";
+	std::cout << "Vertex Count: " << builder.vertices.size() << "\n";
+	return std::make_unique<SEMesh>(device, builder);
+}
+
+void SEMesh::load_mesh_from_file(Builder& builder, const std::string& filepath)
+{
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	std::string warn, err;
+
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
+	{
+		throw std::runtime_error(warn + err);
+	}
+
+	builder.vertices.clear();
+	builder.indices.clear();
+
+	for (const auto& shape : shapes)
+	{
+		for (const auto& index : shape.mesh.indices)
+		{
+			Vertex vertex{};
+	
+			if (index.vertex_index >= 0)
+			{
+				vertex.position = 
+				{
+					attrib.vertices[3 * index.vertex_index + 0],
+					attrib.vertices[3 * index.vertex_index + 1],
+					attrib.vertices[3 * index.vertex_index + 2]
+				};
+			}
+
+			uint32_t colorIndex = 3 * index.vertex_index + 2;
+			if (colorIndex < attrib.colors.size())
+			{
+				vertex.color =
+				{
+					attrib.colors[colorIndex - 2],
+					attrib.colors[colorIndex - 1],
+					attrib.colors[colorIndex]
+				};
+			} else {
+				vertex.color = { 0.18f, 0.18f, 0.18f };
+			}
+
+			if (index.normal_index >= 0)
+			{
+				vertex.normal =
+				{
+					attrib.normals[3 * index.normal_index],
+					attrib.normals[3 * index.normal_index + 1],
+					attrib.normals[3 * index.normal_index + 2]
+				};
+			}
+
+			if (index.texcoord_index >= 0)
+			{
+				vertex.texCoord =
+				{
+					attrib.texcoords[2 * index.texcoord_index],
+					attrib.texcoords[2 * index.texcoord_index + 1]
+				};
+			}
+
+			builder.vertices.push_back(vertex);
+		}
 	}
 }
 

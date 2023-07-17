@@ -143,6 +143,14 @@ namespace SE {
 
 	void SERenderer::free_command_buffers()
 	{
+		if (!m_CommandBuffers.empty()) {
+			// Wait for the device to finish all operations
+			vkDeviceWaitIdle(m_GraphicsDevice.device());
+
+			vkFreeCommandBuffers(m_GraphicsDevice.device(), m_GraphicsDevice.get_command_pool(), static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
+			m_CommandBuffers.clear();
+		}
+
 		vkFreeCommandBuffers(m_GraphicsDevice.device(), m_GraphicsDevice.get_command_pool(), static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
 		m_CommandBuffers.clear();
 	}
