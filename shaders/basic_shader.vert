@@ -25,14 +25,7 @@ void main()
 {
 	gl_Position = Push.transform * vec4(position, 1.0f);
 
-	// Uniform scaling only
-	// vec3 normalWorldSpace = normalize((Push.modelMatrix * vec4(normals, 0.0)).xyz);
-	
-	// mat3 normalMatrix = transpose(inverse(mat3(Push.modelMatrix)));
-	// vec3 normalWorldSpace = normalize(normalMatrix * normals);
-
 	vec3 normalWorldSpace = normalize(mat3(Push.normalMatrix) * normals);
-
 	float lightIntensity = AMBIENT_INTENSITY + max(dot(normalWorldSpace, LIGHT_DIRECTION), 0.0);
 
 	vertexColorOut = lightIntensity * vertexColor;
