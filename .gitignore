@@ -14,6 +14,9 @@
 *.vcxproj.filters
 *.vcxproj.user
 *.spv
+*.fbx
+*.mtl
+*.obj
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -403,3 +406,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 /libs
+/content/models/starter/sm_gadgetbot.fbx
+/content/models/starter/sm_gadgetbot.mtl
