@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SERendering/SEGraphicsDevice/SEGraphicsDevice.hpp"
+#include "SERendering/SEBuffer.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -60,14 +61,12 @@ namespace SE {
 		SEGraphicsDevice m_GraphicsDevice;
 
 		// Vertex Buffer
-		VkBuffer m_VertexBuffer;
-		VkDeviceMemory m_VertexBufferMemory;
+		std::unique_ptr<SEBuffer> m_VertexBuffer;
 		uint32_t m_VertexCount;
 
 		// Index Buffer
 		bool m_HasIndexBuffer{false};
-		VkBuffer m_IndexBuffer;
-		VkDeviceMemory m_IndexBufferMemory;
+		std::unique_ptr<SEBuffer> m_IndexBuffer;
 		uint32_t m_IndexCount;
 	};
 } // end namespace SE

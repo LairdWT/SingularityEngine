@@ -35,14 +35,7 @@ SEMesh::SEMesh(SEGraphicsDevice& device, const SEMesh::Builder& builder) : m_Gra
 
 SEMesh::~SEMesh()
 {
-	vkDestroyBuffer(m_GraphicsDevice.device(), m_VertexBuffer, nullptr);
-	vkFreeMemory(m_GraphicsDevice.device(), m_VertexBufferMemory, nullptr);
 
-	if (m_HasIndexBuffer)
-	{
-		vkDestroyBuffer(m_GraphicsDevice.device(), m_IndexBuffer, nullptr);
-		vkFreeMemory(m_GraphicsDevice.device(), m_IndexBufferMemory, nullptr);
-	}
 }
 
 std::unique_ptr<SEMesh> SEMesh::create_model_from_file(SEGraphicsDevice& device, const std::string& filepath)
@@ -123,13 +116,13 @@ void SEMesh::load_mesh_from_file(Builder& builder, const std::string& filepath)
 
 void SEMesh::bind_command_buffer(VkCommandBuffer commandBuffer)
 {
-	VkBuffer buffers[] = { m_VertexBuffer };
+	VkBuffer buffers[] = { m_VertexBuffer->get_buffer() };
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 
 	if (m_HasIndexBuffer)
 	{
-		vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer->get_buffer(), 0, VK_INDEX_TYPE_UINT32);
 	}
 }
 
@@ -150,34 +143,16 @@ void SEMesh::create_vertex_buffers(const std::vector<Vertex>& vertices)
 
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * m_VertexCount;
 
-	// Staging Buffer
-	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
+	// Create staging buffer
+	uint32_t vertexSize = sizeof(vertices[0]);
+	SEBuffer stagingBuffer{ m_GraphicsDevice, vertexSize, m_VertexCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
+	stagingBuffer.map();
+	stagingBuffer.write_to_buffer((void*)vertices.data());
 
-	m_GraphicsDevice.create_buffer(
-		bufferSize, 
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-		stagingBuffer, 
-		stagingBufferMemory);
+	// Create vertex buffer
+	m_VertexBuffer = std::make_unique<SEBuffer>(m_GraphicsDevice, vertexSize, m_VertexCount, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	void* vertexBufferData;
-	vkMapMemory(m_GraphicsDevice.device(), stagingBufferMemory, 0, bufferSize, 0, &vertexBufferData);
-	memcpy(vertexBufferData, vertices.data(), static_cast<size_t>(bufferSize));
-	vkUnmapMemory(m_GraphicsDevice.device(), stagingBufferMemory);
-
-	// Vertex Buffer
-	m_GraphicsDevice.create_buffer(
-		bufferSize, 
-		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-		m_VertexBuffer, 
-		m_VertexBufferMemory);
-
-	m_GraphicsDevice.copy_buffer(stagingBuffer, m_VertexBuffer, bufferSize);
-
-	vkDestroyBuffer(m_GraphicsDevice.device(), stagingBuffer, nullptr);
-	vkFreeMemory(m_GraphicsDevice.device(), stagingBufferMemory, nullptr);
+	m_GraphicsDevice.copy_buffer(stagingBuffer.get_buffer(), m_VertexBuffer->get_buffer(), bufferSize);
 }
 
 void SEMesh::create_index_buffers(const std::vector<uint32_t>& indices)
@@ -188,34 +163,16 @@ void SEMesh::create_index_buffers(const std::vector<uint32_t>& indices)
 
 	VkDeviceSize bufferSize = sizeof(indices[0]) * m_IndexCount;
 
-	// Staging Buffer
-	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
+	// Create staging buffer
+	uint32_t indexSize = sizeof(indices[0]);
+	SEBuffer stagingBuffer{ m_GraphicsDevice, indexSize, m_IndexCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
+	stagingBuffer.map();
+	stagingBuffer.write_to_buffer((void*)indices.data());
 
-	m_GraphicsDevice.create_buffer(
-		bufferSize,
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		stagingBuffer,
-		stagingBufferMemory);
+	// Create index buffer
+	m_IndexBuffer = std::make_unique<SEBuffer>(m_GraphicsDevice, indexSize, m_IndexCount, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	void* indexBufferData;
-	vkMapMemory(m_GraphicsDevice.device(), stagingBufferMemory, 0, bufferSize, 0, &indexBufferData);
-	memcpy(indexBufferData, indices.data(), static_cast<size_t>(bufferSize));
-	vkUnmapMemory(m_GraphicsDevice.device(), stagingBufferMemory);
-
-	// Vertex Buffer
-	m_GraphicsDevice.create_buffer(
-		bufferSize,
-		VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		m_IndexBuffer,
-		m_IndexBufferMemory);
-
-	m_GraphicsDevice.copy_buffer(stagingBuffer, m_IndexBuffer, bufferSize);
-
-	vkDestroyBuffer(m_GraphicsDevice.device(), stagingBuffer, nullptr);
-	vkFreeMemory(m_GraphicsDevice.device(), stagingBufferMemory, nullptr);
+	m_GraphicsDevice.copy_buffer(stagingBuffer.get_buffer(), m_IndexBuffer->get_buffer(), bufferSize);
 }
 
 std::vector<VkVertexInputBindingDescription> SEMesh::Vertex::get_binding_descriptions()
