@@ -115,13 +115,11 @@ namespace SE {
 
 	VkCommandBuffer SERenderer::get_current_command_buffer() const
 	{
-		assert(m_bIsFrameStarted && "Can't get command buffer when frame is not in progress");
 		return m_CommandBuffers[m_CurrentFrameIndex];
 	}
 
 	uint32_t SERenderer::get_current_frame_index() const
 	{
-		assert(m_bIsFrameStarted && "Can't get frame index when frame is not in progress");
 		return m_CurrentFrameIndex;
 	}
 

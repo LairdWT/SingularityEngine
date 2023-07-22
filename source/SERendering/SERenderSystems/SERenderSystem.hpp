@@ -4,6 +4,7 @@
 #include "SERendering/SEGraphicsDevice/SEGraphicsDevice.hpp"
 #include "SECore/SEEntities/SEGameObject.hpp"
 #include "SECore/SEEntities/SECamera.hpp"
+#include "SERendering/SEFrameInfo.hpp"
 
 #include <memory>
 #include <vector>
@@ -22,7 +23,7 @@ namespace SE {
 		SERenderSystem& operator=(const SERenderSystem&) = delete;
 #pragma endregion Lifecycle
 
-		void render_game_objects(VkCommandBuffer commandBuffer, std::vector<SEGameObject>& gameObjects, const SECamera& camera);
+		void render_game_objects(FFrameInfo& frameInfo, std::vector<SEGameObject>& gameObjects);
 
 
 	private:

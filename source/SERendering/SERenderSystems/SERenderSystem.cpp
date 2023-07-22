@@ -61,22 +61,22 @@ namespace SE {
 		}
 	}
 
-	void SERenderSystem::render_game_objects(VkCommandBuffer commandBuffer, std::vector<SEGameObject>& gameObjects, const SECamera& camera)
+	void SERenderSystem::render_game_objects(FFrameInfo& frameInfo, std::vector<SEGameObject>& gameObjects)
 	{
-		m_Pipeline->bind_command_buffer(commandBuffer);
+		m_Pipeline->bind_command_buffer(frameInfo.commandBuffer);
 
-		auto projectionView = camera.get_projection_matrix() * camera.get_view_matrix();
+		auto projectionView = frameInfo.camera.get_projection_matrix() * frameInfo.camera.get_view_matrix();
 
-		for (auto& obj : gameObjects)
+		for (SEGameObject& obj : gameObjects)
 		{
 			PushConstantData push{};
 			auto modelMatrix = get_transform_matrix(obj.m_TransformComponent.Translation, obj.m_TransformComponent.Rotation, obj.m_TransformComponent.Scale);
 			push.transform = projectionView * modelMatrix;
 			push.normalMatrix = get_normal_matrix(obj.m_TransformComponent.Translation, obj.m_TransformComponent.Rotation, obj.m_TransformComponent.Scale);
 
-			vkCmdPushConstants(commandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
-			obj.m_Mesh->bind_command_buffer(commandBuffer);
-			obj.m_Mesh->draw(commandBuffer);
+			vkCmdPushConstants(frameInfo.commandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
+			obj.m_Mesh->bind_command_buffer(frameInfo.commandBuffer);
+			obj.m_Mesh->draw(frameInfo.commandBuffer);
 		}
 	}
 

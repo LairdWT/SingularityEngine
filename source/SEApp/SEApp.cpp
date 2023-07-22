@@ -8,6 +8,7 @@
 #include "SERendering/SERenderSystems/SERenderSystem.hpp"
 #include "SECore/SEEntities/SECamera.hpp"
 #include "SECore/SEInput/SEKeyboardInputController.hpp"
+#include "SERendering/SEBuffer.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -15,6 +16,12 @@
 #include <glm/gtc/constants.hpp>
 
 namespace SE {
+
+struct FGlobalUniformBufferObject 
+{
+	glm::mat4 projectionView{1.0f};
+	glm::vec3 lightDirection{glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f})};
+};
 
 #pragma region Lifecycle
 	SEApp::SEApp()
@@ -31,6 +38,14 @@ namespace SE {
 
 void SEApp::run()
 {
+	std::vector<std::unique_ptr<SEBuffer>> uniformBuffers(SESwapChain::MAX_FRAMES_IN_FLIGHT);
+
+	for (int i = 0; i < uniformBuffers.size(); i++)
+	{
+		uniformBuffers[i] = std::make_unique<SEBuffer>(m_GraphicsDevice, sizeof(FGlobalUniformBufferObject), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_GraphicsDevice.properties.limits.minUniformBufferOffsetAlignment);
+		uniformBuffers[i]->map();
+	}
+
 	SERenderSystem RenderSystem{m_GraphicsDevice, m_Renderer.get_swap_chain_render_pass()};
 	SECamera camera{};
 	SEGameObject viewerObject = SEGameObject::create_game_object();
@@ -58,8 +73,18 @@ void SEApp::run()
 
 		if (VkCommandBuffer commandBuffer = m_Renderer.begin_frame())
 		{
+			uint32_t currentFrameIndex = m_Renderer.get_current_frame_index();
+			FFrameInfo frameInfo{currentFrameIndex, m_TimeManager->get_delta_time(), commandBuffer, camera};
+
+			// update global uniform buffer
+			FGlobalUniformBufferObject uniformBufferObject{};
+			uniformBufferObject.projectionView = camera.get_projection_matrix() * camera.get_view_matrix();
+			uniformBuffers[currentFrameIndex]->write_to_buffer(&uniformBufferObject);
+			uniformBuffers[currentFrameIndex]->flush();
+
+			// rendering
 			m_Renderer.begin_swap_chain_render_pass(commandBuffer);
-			RenderSystem.render_game_objects(commandBuffer, m_GameObjects, camera);
+			RenderSystem.render_game_objects(frameInfo, m_GameObjects);
 			m_Renderer.end_swap_chain_render_pass(commandBuffer);
 			m_Renderer.end_frame();
 		}
