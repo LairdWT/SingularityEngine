@@ -13,6 +13,7 @@ struct FFrameInfo
 	float deltaTime;
 	VkCommandBuffer commandBuffer;
 	SECamera& camera;
+	VkDescriptorSet descriptorSet;
 };
 
 }

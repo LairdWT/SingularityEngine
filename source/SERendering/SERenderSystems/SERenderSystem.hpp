@@ -16,7 +16,7 @@ namespace SE {
 	public:
 
 #pragma region Lifecycle
-		SERenderSystem(SEGraphicsDevice& graphicsDevice, VkRenderPass renderPass);
+		SERenderSystem(SEGraphicsDevice& graphicsDevice, VkRenderPass renderPass, VkDescriptorSetLayout globalDescriptorSetLayout);
 		~SERenderSystem();
 
 		SERenderSystem(const SERenderSystem&) = delete;
@@ -28,7 +28,7 @@ namespace SE {
 
 	private:
 
-		void create_pipeline_layout();
+		void create_pipeline_layout(VkDescriptorSetLayout globalDescriptorSetLayout);
 		void create_pipeline(VkRenderPass renderPass);
 
 

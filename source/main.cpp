@@ -12,8 +12,10 @@ int main()
 	try 
 	{
 		app.run();
-	} catch (const std::exception &e) {
-		std::cerr << e.what() << '\n';
+	} 
+	catch (const std::exception& exception) 
+	{
+		std::cerr << exception.what() << '\n';
 		return EXIT_FAILURE;
 	}
 

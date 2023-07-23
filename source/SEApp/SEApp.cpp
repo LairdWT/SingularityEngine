@@ -20,33 +20,52 @@ namespace SE {
 struct FGlobalUniformBufferObject 
 {
 	glm::mat4 projectionView{1.0f};
-	glm::vec3 lightDirection{glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f})};
+	glm::vec4 lightDirection{glm::normalize(glm::vec4{1.0f, -3.0f, -1.0f, 0.0f})};
 };
 
 #pragma region Lifecycle
 	SEApp::SEApp()
 	{
-		load_game_objects();
 		m_TimeManager = std::make_unique<SETimeManager>(m_FixedTimeStep);
+
+		m_GlobalDescriptorPool = SEDescriptorPool::Builder(m_GraphicsDevice)
+			.set_max_sets(SESwapChain::MAX_FRAMES_IN_FLIGHT)
+			.add_pool_size(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SESwapChain::MAX_FRAMES_IN_FLIGHT)
+			.build();
+
+		load_game_objects();
 	}
 
 	SEApp::~SEApp()
 	{
-
+		m_GlobalDescriptorPool = nullptr;
+		m_TimeManager = nullptr;
 	}
 #pragma endregion Lifecycle
 
 void SEApp::run()
 {
 	std::vector<std::unique_ptr<SEBuffer>> uniformBuffers(SESwapChain::MAX_FRAMES_IN_FLIGHT);
-
-	for (int i = 0; i < uniformBuffers.size(); i++)
+	for (std::unique_ptr<SEBuffer>& uniformBuffer : uniformBuffers)
 	{
-		uniformBuffers[i] = std::make_unique<SEBuffer>(m_GraphicsDevice, sizeof(FGlobalUniformBufferObject), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_GraphicsDevice.properties.limits.minUniformBufferOffsetAlignment);
-		uniformBuffers[i]->map();
+		uniformBuffer = std::make_unique<SEBuffer>(m_GraphicsDevice, sizeof(FGlobalUniformBufferObject), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_GraphicsDevice.properties.limits.minUniformBufferOffsetAlignment);
+		uniformBuffer->map();
 	}
 
-	SERenderSystem RenderSystem{m_GraphicsDevice, m_Renderer.get_swap_chain_render_pass()};
+	std::unique_ptr<SE::SEDescriptorSetLayout> globalDescriptorSetLayout = SEDescriptorSetLayout::Builder(m_GraphicsDevice)
+		.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+		.build();
+
+	std::vector<VkDescriptorSet> globalDescriptorSets(SESwapChain::MAX_FRAMES_IN_FLIGHT);
+	for (uint32_t index = 0; index < globalDescriptorSets.size(); index++)
+	{
+		auto bufferInfo = uniformBuffers[index]->get_descriptor_info();
+		SEDescriptorWriter(*globalDescriptorSetLayout, *m_GlobalDescriptorPool)
+			.write_buffer(0, &bufferInfo)
+			.build(globalDescriptorSets[index]);
+	}
+
+	SERenderSystem RenderSystem{m_GraphicsDevice, m_Renderer.get_swap_chain_render_pass(), globalDescriptorSetLayout->get_descriptor_set_layout()};
 	SECamera camera{};
 	SEGameObject viewerObject = SEGameObject::create_game_object();
 	SEKeyboardInputController cameraInputController{};
@@ -74,7 +93,7 @@ void SEApp::run()
 		if (VkCommandBuffer commandBuffer = m_Renderer.begin_frame())
 		{
 			uint32_t currentFrameIndex = m_Renderer.get_current_frame_index();
-			FFrameInfo frameInfo{currentFrameIndex, m_TimeManager->get_delta_time(), commandBuffer, camera};
+			FFrameInfo frameInfo{currentFrameIndex, m_TimeManager->get_delta_time(), commandBuffer, camera, globalDescriptorSets[currentFrameIndex]};
 
 			// update global uniform buffer
 			FGlobalUniformBufferObject uniformBufferObject{};

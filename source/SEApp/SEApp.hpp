@@ -5,6 +5,7 @@
 #include "SERendering/SERenderer.hpp"
 #include "SECore/SEEntities/SEGameObject.hpp"
 #include "SECore/SESystems/SETimeManager.hpp"
+#include "SERendering/SEDescriptorSets/SEDescriptors.hpp"
 
 #include <memory>
 #include <vector>
@@ -39,6 +40,9 @@ private:
 	SERenderer m_Renderer{m_Window, m_GraphicsDevice};
 
 	std::vector<SEGameObject> m_GameObjects;
+	std::unique_ptr<SEDescriptorPool> m_GlobalDescriptorPool{};
+
+	// Time management
 	std::unique_ptr<SETimeManager> m_TimeManager;
 	SETickDelegate m_TickDelegate;
 	std::atomic<uint64_t> m_TickCounter{0};
