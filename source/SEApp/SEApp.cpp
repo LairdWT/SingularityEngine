@@ -20,7 +20,9 @@ namespace SE {
 struct FGlobalUniformBufferObject 
 {
 	glm::mat4 projectionView{1.0f};
-	glm::vec4 lightDirection{glm::normalize(glm::vec4{1.0f, -3.0f, -1.0f, 0.0f})};
+	glm::vec4 ambientColor{0.18f, 0.18f, 0.18f, 0.02f};
+	glm::vec4 lightPosition{0.0f, -5.0f, 5.0f, 0.0f};
+	glm::vec4 lightColor{1.0f}; // w = light intensity
 };
 
 #pragma region Lifecycle
@@ -88,7 +90,7 @@ void SEApp::run()
 		camera.set_view_yxz(viewerObject.m_TransformComponent.Translation, viewerObject.m_TransformComponent.Rotation);
 
 		float aspectRatio = m_Renderer.get_swap_chain_aspect_ratio();
-		camera.set_perspective_projection(glm::radians(60.0f), aspectRatio, 0.01f, 100.0f);
+		camera.set_perspective_projection(glm::radians(60.0f), aspectRatio, 0.01f, 1000.0f);
 
 		if (VkCommandBuffer commandBuffer = m_Renderer.begin_frame())
 		{
@@ -125,20 +127,33 @@ void SEApp::on_tick()
 void SEApp::load_game_objects()
 {
 	std::shared_ptr<SEMesh> seMesh = SEMesh::create_model_from_file(m_GraphicsDevice, "content/models/starter/sm_gadgetbot.obj");
+	std::shared_ptr<SEMesh> sePlaneMesh = SEMesh::create_model_from_file(m_GraphicsDevice, "content/models/starter/plane.obj");
 	
-	SEGameObject gameObject = SEGameObject::create_game_object();
-	gameObject.m_Mesh = seMesh;
-	gameObject.m_TransformComponent.Translation = { 0.0f, 0.0f, 2.5f };
-	gameObject.m_TransformComponent.Rotation = { 0.0f, 0.0f, 0.0f };
-	gameObject.m_TransformComponent.Scale = { 0.5f, 0.5f, 0.5f };
-	m_GameObjects.push_back(std::move(gameObject));
+	if (seMesh != nullptr)
+	{
+		SEGameObject gameObject = SEGameObject::create_game_object();
+		gameObject.m_Mesh = seMesh;
+		gameObject.m_TransformComponent.Translation = { -0.5f, 0.0f, 0.0f };
+		gameObject.m_TransformComponent.Rotation = { 0.0f, 0.0f, 0.0f };
+		gameObject.m_TransformComponent.Scale = { 0.5f, 0.5f, 0.5f };
+		m_GameObjects.push_back(std::move(gameObject));
 
-	SEGameObject gameObjectTwo = SEGameObject::create_game_object();
-	gameObjectTwo.m_Mesh = seMesh;
-	gameObjectTwo.m_TransformComponent.Translation = { 1.0f, 0.0f, 2.5f };
-	gameObjectTwo.m_TransformComponent.Rotation = { 0.0f, 0.0f, 0.0f };
-	gameObjectTwo.m_TransformComponent.Scale = { 0.7f, 0.7f, 0.7f };
-	m_GameObjects.push_back(std::move(gameObjectTwo));
+		SEGameObject gameObjectTwo = SEGameObject::create_game_object();
+		gameObjectTwo.m_Mesh = seMesh;
+		gameObjectTwo.m_TransformComponent.Translation = { 0.5f, 0.0f, 0.0f };
+		gameObjectTwo.m_TransformComponent.Rotation = { 0.0f, 0.0f, 0.0f };
+		gameObjectTwo.m_TransformComponent.Scale = { 0.7f, 0.7f, 0.7f };
+		m_GameObjects.push_back(std::move(gameObjectTwo));
+	}
+
+	if (sePlaneMesh != nullptr)
+	{
+		SEGameObject gameObjectThree = SEGameObject::create_game_object();
+		gameObjectThree.m_Mesh = sePlaneMesh;
+		gameObjectThree.m_TransformComponent.Translation = { 0.0f, 0.5f, 0.0f };
+		gameObjectThree.m_TransformComponent.Scale = { 5.0f, 1.0f, 5.0f };
+		m_GameObjects.push_back(std::move(gameObjectThree));
+	}
 }
 
 } // namespace SE

@@ -12,7 +12,9 @@ layout(location = 0) out vec3 vertexColorOut;
 layout(set = 0, binding = 0) uniform globalUniformBufferObject
 {
 	mat4 projectionViewMatrix;
-	vec4 directionToLight;
+	vec4 ambientColor;
+	vec4 lightPosition;
+	vec4 lightColor;
 } uniformBufferObject;
 
 layout(push_constant) uniform push 
@@ -24,14 +26,18 @@ layout(push_constant) uniform push
 // output
 // layout(location = 1) out vec3 vertexColorOut;
 
-const float AMBIENT_INTENSITY = 0.04f;
-
 void main() 
 {
-	gl_Position = uniformBufferObject.projectionViewMatrix * Push.meshMatrix * vec4(position, 1.0f);
+	vec4 worldPosition = Push.meshMatrix * vec4(position, 1.0f);
+	gl_Position = uniformBufferObject.projectionViewMatrix * worldPosition;
 
 	vec3 normalWorldSpace = normalize(mat3(Push.normalMatrix) * normals);
-	float lightIntensity = AMBIENT_INTENSITY + max(dot(normalWorldSpace, uniformBufferObject.directionToLight.xyz), 0.0);
 
-	vertexColorOut = lightIntensity * vertexColor;
+	vec3 directionToLight = normalize(uniformBufferObject.lightPosition.xyz - worldPosition.xyz);
+	float lightAttenuation = 1.0f / dot(directionToLight.xyz, directionToLight.xyz);
+	vec3 lightColor = uniformBufferObject.lightColor.rgb * uniformBufferObject.lightColor.w * lightAttenuation;
+	vec3 ambientLight = uniformBufferObject.ambientColor.rgb * uniformBufferObject.ambientColor.w;
+	vec3 diffuseLight = lightColor * max(dot(normalWorldSpace, normalize(directionToLight)), 0.0f);
+
+	vertexColorOut = vertexColor * (ambientLight + diffuseLight);
 }
