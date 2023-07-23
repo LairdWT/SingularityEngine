@@ -2,6 +2,7 @@
 #include "SECore/SEUtilities/SEHashUtilities.hpp"
 
 #include <cassert>
+#include <iostream>
 #include <unordered_map>
 
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -39,10 +40,19 @@ SEMesh::~SEMesh()
 
 std::unique_ptr<SEMesh> SEMesh::create_model_from_file(SEGraphicsDevice& device, const std::string& filepath)
 {
-	Builder builder{};
-	load_mesh_from_file(builder, filepath);
-	return std::make_unique<SEMesh>(device, builder);
+	try 
+	{
+		Builder builder{};
+		load_mesh_from_file(builder, filepath);
+		return std::make_unique<SEMesh>(device, builder);
+	}
+	catch (const std::exception& exception) 
+	{
+		std::cerr << "Failed to load mesh from file: " << exception.what() << '\n';
+		return nullptr;
+	}
 }
+
 
 void SEMesh::load_mesh_from_file(Builder& builder, const std::string& filepath)
 {
